@@ -392,6 +392,7 @@ metrics:
   ## -- Prometheus is enabled by default.
   ## -- It can be disabled by setting "prometheus: null"
   prometheus:
+    manualRouting: true
     addEntryPointsLabels: true
     service:
       enabled: true
@@ -1000,6 +1001,11 @@ extraObjects:
             image: 590183963854.dkr.ecr.eu-west-3.amazonaws.com/traefik:latest
             ports:
             - containerPort: 443
+            readinessProbe:
+              tcpSocket:
+                port: 443
+              initialDelaySeconds: 15
+              periodSeconds: 10
             readinessProbe:
               httpGet:
                 path: /health

@@ -1,0 +1,48 @@
+storageClass:
+  name: gp3
+  provisioner: kubernetes.io/aws-ebs
+  type: gp3
+
+pv:
+  name: traefik-pv
+  capacity: 1Gi
+  accessMode: ReadWriteOnce
+  path: /data
+
+pvc:
+  name: traefik-pvc
+  namespace: default
+  accessMode: ReadWriteOnce
+  requestStorage: 512Mi
+
+ingressRoute:
+  name: whoami-route
+  entryPoint: websecure
+  host: achapetcanoas.com.br
+  kind: Rule
+  serviceName: whoami
+  servicePort: 443
+  certResolver: le
+
+deployment:
+  name: whoami-deployment
+  appLabel: whoami
+  replicas: 1
+  imagePullSecret: regcred
+  containerName: whoami
+  containerImage: 590183963854.dkr.ecr.us-east-1.amazonaws.com/devops:latest
+  containerPort: 443
+  readinessPath: /health
+  readinessDelay: 5
+  readinessPeriod: 10
+  readinessTimeout: 5
+  volumeName: certs-volume
+  mountPath: /cert
+  readOnly: true
+
+service:
+  name: whoami
+  namespace: default
+  port: 443
+  targetPort: 443
+  selector: whoami

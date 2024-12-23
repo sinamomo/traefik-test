@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  labels:
+    app: {{ .Values.deployment.appLabel }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.appLabel }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.appLabel }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.deployment.imagePullSecret }}
+      volumes:
+        - name: certs-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc.name }}
+      containers:
+        - name: {{ .Values.deployment.containerName }}
+          image: {{ .Values.deployment.containerImage }}
+          ports:
+            - containerPort: {{ .Values.deployment.containerPort }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.deployment.readinessPath }}
+              port: {{ .Values.deployment.containerPort }}
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.deployment.readinessDelay }}
+            periodSeconds: {{ .Values.deployment.readinessPeriod }}
+            timeoutSeconds: {{ .Values.deployment.readinessTimeout }}
+          volumeMounts:
+            - name: {{ .Values.deployment.volumeName }}
+              mountPath: {{ .Values.deployment.mountPath }}
+              readOnly: {{ .Values.deployment.readOnly }}
